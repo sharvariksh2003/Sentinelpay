@@ -1,4 +1,5 @@
 """Customer-facing banking data: accounts and beneficiaries. All values are synthetic."""
+
 from decimal import Decimal
 from uuid import uuid4
 
@@ -28,7 +29,9 @@ class Customer(models.Model):
         CRITICAL = "CRITICAL", "Critical"
 
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="customer_profile"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="customer_profile",
     )
     customer_number = models.CharField(
         max_length=20, unique=True, default=generate_customer_number
@@ -40,10 +43,14 @@ class Customer(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     address = models.TextField(blank=True)
     kyc_status = models.CharField(
-        max_length=20, choices=KycStatus.choices, default=KycStatus.NOT_PROVIDED
+        max_length=20,
+        choices=KycStatus.choices,
+        default=KycStatus.NOT_PROVIDED,
     )
     risk_level = models.CharField(
-        max_length=20, choices=RiskLevel.choices, default=RiskLevel.UNKNOWN
+        max_length=20,
+        choices=RiskLevel.choices,
+        default=RiskLevel.UNKNOWN,
     )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now)
@@ -88,13 +95,17 @@ class BankAccount(models.Model):
         CLOSED = "CLOSED", "Closed"
 
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="accounts"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="accounts",
     )
     account_ref = models.CharField(
         max_length=34, unique=True, db_column="account_number"
     )
     account_type = models.CharField(
-        max_length=20, choices=AccountType.choices, default=AccountType.UNSPECIFIED
+        max_length=20,
+        choices=AccountType.choices,
+        default=AccountType.UNSPECIFIED,
     )
     currency = models.CharField(max_length=3, default="INR")
     balance = models.DecimalField(
@@ -104,10 +115,14 @@ class BankAccount(models.Model):
         db_column="available_balance",
     )
     ledger_balance = models.DecimalField(
-        max_digits=18, decimal_places=2, default=Decimal("0.00")
+        max_digits=18,
+        decimal_places=2,
+        default=Decimal("0.00"),
     )
     account_status = models.CharField(
-        max_length=20, choices=AccountStatus.choices, default=AccountStatus.ACTIVE
+        max_length=20,
+        choices=AccountStatus.choices,
+        default=AccountStatus.ACTIVE,
     )
     opened_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
@@ -115,9 +130,13 @@ class BankAccount(models.Model):
     class Meta:
         db_table = "banking_account"
         constraints = [
-            models.CheckConstraint(condition=Q(balance__gte=0), name="balance_non_negative"),
             models.CheckConstraint(
-                condition=Q(ledger_balance__gte=0), name="ledger_balance_non_negative"
+                condition=Q(balance__gte=0),
+                name="balance_non_negative",
+            ),
+            models.CheckConstraint(
+                condition=Q(ledger_balance__gte=0),
+                name="ledger_balance_non_negative",
             ),
         ]
 
@@ -148,8 +167,11 @@ class Beneficiary(models.Model):
         null=True,
         blank=True,
     )
-    name = models.CharField(max_length=150, db_column="beneficiary_name")
-    destination_ref = models.CharField(max_length=34, db_column="beneficiary_account")
+
+    # These names and lengths match the existing MySQL table.
+    name = models.CharField(max_length=120)
+    destination_ref = models.CharField(max_length=20)
+
     bank_code = models.CharField(max_length=20, blank=True)
     nickname = models.CharField(max_length=50, blank=True)
     verification_status = models.CharField(
@@ -180,10 +202,14 @@ class Transaction(models.Model):
 
     transaction_reference = models.UUIDField(default=uuid4, unique=True, editable=False)
     payment = models.OneToOneField(
-        "payments.Payment", on_delete=models.PROTECT, related_name="banking_transaction"
+        "payments.Payment",
+        on_delete=models.PROTECT,
+        related_name="banking_transaction",
     )
     account = models.ForeignKey(
-        BankAccount, on_delete=models.PROTECT, related_name="transactions"
+        BankAccount,
+        on_delete=models.PROTECT,
+        related_name="transactions",
     )
     beneficiary = models.ForeignKey(
         Beneficiary,
@@ -200,7 +226,9 @@ class Transaction(models.Model):
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     device_id = models.CharField(max_length=100, blank=True)
     risk_score = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal("0.00")
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
     )
     created_at = models.DateTimeField(default=timezone.now)
     processed_at = models.DateTimeField(null=True, blank=True)
@@ -210,7 +238,8 @@ class Transaction(models.Model):
         ordering = ["-created_at"]
         constraints = [
             models.CheckConstraint(
-                condition=Q(amount__gt=0), name="transaction_amount_positive"
+                condition=Q(amount__gt=0),
+                name="transaction_amount_positive",
             ),
         ]
 

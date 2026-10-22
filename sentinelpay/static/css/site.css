@@ -46,7 +46,7 @@ button, input, select { font: inherit; }
 }
 .topbar-inner, .nav-actions, .brand, .nav-user, .footer-inner { display: flex; align-items: center; }
 .topbar-inner { height: 100%; justify-content: space-between; }
-.brand { gap: 10px; color: var(--ink); font-size: 18px; font-weight: 800; letter-spacing: -.7px; }
+.brand { gap: 10px; color: var(--ink); font-size: 20px; font-weight: 800; letter-spacing: -.7px; }
 .brand:hover { color: var(--ink); }
 .brand-mark {
   display: grid;
